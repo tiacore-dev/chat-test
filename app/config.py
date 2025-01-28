@@ -10,5 +10,8 @@ class Settings:
     SECRET_KEY = os.getenv("SECRET_KEY", "default_secret")
     ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv(
         "ACCESS_TOKEN_EXPIRE_MINUTES")
-    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    # LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    LOG_LEVEL = "DEBUG"
     ALGORITHM = "HS256"
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    ASSISTANT_ID = os.getenv('ASSISTANT_ID')

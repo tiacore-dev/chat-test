@@ -1,0 +1,10 @@
+{
+  "upgrade": [
+    "ALTER TABLE \"users\" ALTER COLUMN \"chat\" TYPE VARCHAR(50)",
+    "ALTER TABLE \"messages\" RENAME COLUMN \"chat_id\" TO \"chat\""
+  ],
+  "downgrade": [
+    "ALTER TABLE \"messages\" RENAME COLUMN \"chat\" TO \"chat_id\"",
+    "ALTER TABLE \"users\" ALTER COLUMN \"chat\" TYPE UUID"
+  ]
+}

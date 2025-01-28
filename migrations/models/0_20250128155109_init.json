@@ -1,0 +1,5 @@
+{
+  "upgrade": [
+    "CREATE TABLE IF NOT EXISTS \"users\" (\n    \"user_id\" UUID NOT NULL PRIMARY KEY,\n    \"username\" VARCHAR(50) NOT NULL UNIQUE,\n    \"password_hash\" VARCHAR(255) NOT NULL,\n    \"chat\" UUID\n);\nCREATE TABLE IF NOT EXISTS \"chats\" (\n    \"chat_id\" UUID NOT NULL PRIMARY KEY,\n    \"created_at\" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    \"user_id\" UUID NOT NULL REFERENCES \"users\" (\"user_id\") ON DELETE CASCADE\n);\nCREATE TABLE IF NOT EXISTS \"messages\" (\n    \"message_id\" UUID NOT NULL PRIMARY KEY,\n    \"content\" TEXT NOT NULL,\n    \"timestamp\" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    \"chat_id\" UUID NOT NULL REFERENCES \"chats\" (\"chat_id\") ON DELETE CASCADE\n);\nCREATE TABLE IF NOT EXISTS \"aerich\" (\n    \"id\" SERIAL NOT NULL PRIMARY KEY,\n    \"version\" VARCHAR(255) NOT NULL,\n    \"app\" VARCHAR(20) NOT NULL\n);"
+  ]
+}

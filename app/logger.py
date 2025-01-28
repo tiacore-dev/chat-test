@@ -9,7 +9,7 @@ def setup_logger():
     logger.add(
         sys.stdout,  # Логи в консоль
         format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{message}</cyan>",
-        level="INFO",
+        level="DEBUG",
     )
     logger.add(
         "logs/app.log",  # Логи в файл

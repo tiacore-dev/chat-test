@@ -58,3 +58,33 @@ document.getElementById("message-form").addEventListener("submit", function (eve
         document.getElementById("message-input").value = ""; // Очистка поля ввода
     }
 });
+
+document.getElementById("clear-chat").addEventListener("click", async function () {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        alert("You are not authenticated!");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/chat/clear_chat", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to clear chat");
+        }
+
+        const data = await response.json();
+        alert("Chat cleared!");
+        // Перезагрузка страницы или логика для работы с новым чатом
+        window.location.reload();
+    } catch (error) {
+        console.error(error);
+        alert("An error occurred");
+    }
+});

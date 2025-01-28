@@ -1,0 +1,21 @@
+{
+  "upgrade": [
+    "ALTER TABLE \"messages\" DROP CONSTRAINT IF EXISTS \"messages_chat_id_fkey\"",
+    "ALTER TABLE \"chats\" ALTER COLUMN \"chat_id\" DROP DEFAULT",
+    "ALTER TABLE \"chats\" ALTER COLUMN \"chat_id\" TYPE VARCHAR(50)",
+    "ALTER TABLE \"messages\" ALTER COLUMN \"chat_id\" TYPE VARCHAR(50)",
+    "ALTER TABLE \"chats\" ADD \"deleted\" BOOLEAN NOT NULL DEFAULT FALSE",
+    "ALTER TABLE \"messages\" ADD \"role\" VARCHAR(20) NOT NULL",
+    "ALTER TABLE \"messages\" ADD CONSTRAINT \"messages_chat_id_fkey\" FOREIGN KEY (\"chat_id\") REFERENCES \"chats\" (\"chat_id\") ON DELETE CASCADE",
+    "ALTER TABLE \"users\" ALTER COLUMN \"chat\" TYPE VARCHAR(50)"
+  ],
+    "downgrade": [
+      "ALTER TABLE \"messages\" DROP CONSTRAINT IF EXISTS \"messages_chat_id_fkey\"",
+      "ALTER TABLE \"chats\" ALTER COLUMN \"chat_id\" TYPE UUID USING chat_id::uuid",
+      "ALTER TABLE \"messages\" ALTER COLUMN \"chat_id\" TYPE UUID USING chat_id::uuid",
+      "ALTER TABLE \"chats\" DROP COLUMN \"deleted\"",
+      "ALTER TABLE \"messages\" DROP COLUMN \"role\"",
+      "ALTER TABLE \"messages\" ADD CONSTRAINT \"messages_chat_id_fkey\" FOREIGN KEY (\"chat_id\") REFERENCES \"chats\" (\"chat_id\") ON DELETE CASCADE",
+      "ALTER TABLE \"users\" ALTER COLUMN \"chat\" TYPE UUID USING chat::uuid"
+    ]
+}

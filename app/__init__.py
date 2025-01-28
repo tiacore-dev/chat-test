@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from tortoise.contrib.fastapi import register_tortoise
 from fastapi.staticfiles import StaticFiles
+from tortoise.contrib.fastapi import register_tortoise
+import openai
 from app.logger import setup_logger
 from app.routes import register_routes
 from app.config import Settings
@@ -13,7 +14,7 @@ def create_app() -> FastAPI:
 
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.state.settings = Settings()
-
+    openai.api_key = app.state.settings.OPENAI_API_KEY
    # Конфигурация Tortoise ORM
     register_tortoise(
         app,

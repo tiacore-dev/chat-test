@@ -12,3 +12,5 @@ alembic==1.14.0
 pytest==8.3.4
 python-jose==3.3.0
 python-multipart==0.0.20
+openai==1.54.3
+aerich==0.2.4

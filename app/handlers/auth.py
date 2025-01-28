@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from app.config import Settings
+from app.database import User
 
 settings = Settings()
 
@@ -57,7 +58,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 async def login_handler(username: str, password: str):
-    # Пример проверки пользователя
-    if username == "admin" and password == "1234":
+    user = await User.filter(username=username).first()
+    if user and user.check_password(password):
         return {"access_token": create_access_token({"sub": username})}
     raise HTTPException(status_code=401, detail="Invalid credentials")
