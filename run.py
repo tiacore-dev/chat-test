@@ -1,4 +1,11 @@
+import os
+from dotenv import load_dotenv
 from app import create_app
+
+load_dotenv()
+
+# Порт и биндинг
+port = os.getenv('PORT')
 
 
 async def create_admin_user():
@@ -8,6 +15,7 @@ async def create_admin_user():
     if not admin:
         await create_user(username="admin", password="qweasdzxc")
 
+
 app = create_app()
 
 
@@ -15,3 +23,7 @@ app = create_app()
 async def startup_event():
     # Создаем администратора при запуске
     await create_admin_user()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
