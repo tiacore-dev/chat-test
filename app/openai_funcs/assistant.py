@@ -1,16 +1,19 @@
 import time
-import openai
+from openai import AsyncOpenAI
 from loguru import logger
 from app.config import Settings
 
 settings = Settings()
 
+client = AsyncOpenAI(
+    api_key=settings.OPENAI_API_KEY
+)
 assistant_id = settings.ASSISTANT_ID
 
 
-def create_thread():
+async def create_thread():
     try:
-        thread = openai.beta.threads.create()
+        thread = await client.beta.threads.create()
         logger.info(f"Создан новый поток: {thread.id}")
         return thread
     except Exception as e:
@@ -23,11 +26,11 @@ async def create_run(user_input, thread_id, user_id):
         user_id} в потоке {thread_id}""")
     try:
         # Добавляем сообщение пользователя в поток
-        openai.beta.threads.messages.create(
+        await client.beta.threads.messages.create(
             thread_id=thread_id, role="user", content=user_input)
 
         # Запускаем ассистента
-        run = openai.beta.threads.runs.create(
+        run = await client.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=assistant_id,
             max_prompt_tokens=5000,
@@ -35,7 +38,7 @@ async def create_run(user_input, thread_id, user_id):
         )
 
         while True:
-            run_status = openai.beta.threads.runs.retrieve(
+            run_status = await client.beta.threads.runs.retrieve(
                 thread_id=thread_id, run_id=run.id)
 
             if run_status.status == "completed":
@@ -48,7 +51,7 @@ async def create_run(user_input, thread_id, user_id):
                 # model = run_data.get("model")
 
                 # Получение последнего сообщения от ассистента
-                messages = openai.beta.threads.messages.list(
+                messages = await client.beta.threads.messages.list(
                     thread_id=thread_id)
                 if messages.data:
                     response = messages.data[0].content[0].text.value

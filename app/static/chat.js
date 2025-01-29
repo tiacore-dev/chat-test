@@ -5,6 +5,9 @@ if (!token) {
     window.location.href = "/login";
 }
 
+// Глобальная переменная для WebSocket
+let ws;
+
 // Проверка токена
 fetch("/protected", {
     method: "GET",
@@ -20,30 +23,43 @@ fetch("/protected", {
     })
     .then(data => {
         console.log("Token is valid:", data);
+        return fetch("/config");  // Запрос на получение WebSocket URL
+    })
+    .then(response => response.json())
+    .then(config => {
+        ws = new WebSocket(`${config.ws_url}?token=${token}`);
+        console.log("WebSocket connected to:", config.ws_url);
+
+        ws.onopen = function () {
+            console.log("Connected to WebSocket");
+        };
+
+        ws.onmessage = function (event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === "history") {
+                    data.messages.forEach(msg => appendMessage(msg.role, msg.content));
+                } else {
+                    appendMessage(data.role, data.content);
+                }
+            } catch (e) {
+                console.error("Ошибка парсинга WebSocket-сообщения:", e, event.data);
+            }
+        };
+
+        ws.onerror = function (event) {
+            console.error("WebSocket error:", event);
+            alert("WebSocket connection error. Please try again.");
+        };
+
+        ws.onclose = function () {
+            console.log("WebSocket connection closed");
+        };
     })
     .catch(error => {
-        console.error("Token validation failed:", error);
+        console.error("Failed to fetch WebSocket config:", error);
         window.location.href = "/login";
     });
-
-const ws = new WebSocket(`ws://localhost:5015/api/chat/ws?token=${token}`);
-
-ws.onopen = function () {
-    console.log("Connected to WebSocket");
-};
-
-ws.onmessage = function (event) {
-    try {
-        const data = JSON.parse(event.data);
-        if (data.type === "history") {
-            data.messages.forEach(msg => appendMessage(msg.role, msg.content));
-        } else {
-            appendMessage(data.role, data.content); // ✅ Теперь сообщения добавляются только при получении от сервера
-        }
-    } catch (e) {
-        console.error("Ошибка парсинга WebSocket-сообщения:", e, event.data);
-    }
-};
 
 
 function appendMessage(role, content) {
@@ -62,17 +78,6 @@ function appendMessage(role, content) {
     messageBox.scrollTop = messageBox.scrollHeight; // Автоскролл вниз
 }
 
-
-
-
-ws.onerror = function (event) {
-    console.error("WebSocket error:", event);
-    alert("WebSocket connection error. Please try again.");
-};
-
-ws.onclose = function () {
-    console.log("WebSocket connection closed");
-};
 
 // Отправка сообщений
 document.getElementById("message-form").addEventListener("submit", function (event) {

@@ -16,8 +16,6 @@ class User(Model):
         pk=True, default=uuid.uuid4)  # UUID как Primary Key
     username = fields.CharField(max_length=50, unique=True)
     password_hash = fields.CharField(max_length=255)
-    # ID чата, связанного с пользователем
-    chat = fields.CharField(null=True, max_length=50)
 
     class Meta:
         table = "users"

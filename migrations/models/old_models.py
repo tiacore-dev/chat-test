@@ -1,8 +1,14 @@
-from tortoise import Model, fields
 import uuid
 from tortoise.models import Model
 from tortoise import fields
 from werkzeug.security import generate_password_hash, check_password_hash
+
+
+async def create_user(username: str, password: str):
+    # Хэшируем пароль
+    hashed_password = generate_password_hash(password)
+    user = await User.create(username=username, password_hash=hashed_password)
+    return user
 
 
 class User(Model):
@@ -10,8 +16,6 @@ class User(Model):
         pk=True, default=uuid.uuid4)  # UUID как Primary Key
     username = fields.CharField(max_length=50, unique=True)
     password_hash = fields.CharField(max_length=255)
-    # ID чата, связанного с пользователем
-    chat = fields.CharField(null=True, max_length=50)
 
     class Meta:
         table = "users"
@@ -47,6 +51,7 @@ class Message(Model):
     class Meta:
         table = "messages"
 
+from tortoise import Model, fields
 
 MAX_VERSION_LENGTH = 255
 
@@ -57,3 +62,4 @@ class Aerich(Model):
 
     class Meta:
         ordering = ["-id"]
+

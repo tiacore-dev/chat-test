@@ -1,0 +1,32 @@
+services:
+  aerich:
+    build: .
+    command: aerich upgrade
+    volumes:
+      - .:/app
+    networks:
+      - chat_network
+
+  web:
+    tty: true
+    stdin_open: true
+    build: .
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    ports:
+      - "${PORT}:5015"
+    depends_on:
+      - aerich
+    volumes:
+      - .:/app
+    command: >
+       uvicorn app.run:create_app --host 0.0.0.0 --port 5015 --factory
+    networks:
+      - chat_network
+
+
+
+networks:
+  chat_network:
+    driver: bridge

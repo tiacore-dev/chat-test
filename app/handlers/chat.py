@@ -63,11 +63,9 @@ async def get_chat(user):
         logger.info(f"""No active chat found for user '{
                     user.username}'. Creating a new one.""")
         history = None
-        thread = create_thread()
+        thread = await create_thread()
         logger.info(f"Generated new thread ID: {thread.id}")
         chat = await Chat.create(chat_id=str(thread.id), user=user)
-        user.chat = chat
-        await user.save()
         logger.info(f"""New chat created and linked to user '{
                     user.username}' with chat ID: {chat.chat_id}.""")
     return chat, history

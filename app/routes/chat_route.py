@@ -113,10 +113,9 @@ async def clear_chat(token: str = Depends(oauth2_scheme)):
     if current_chat:
         current_chat.deleted = True
         await current_chat.save()
-    thread = create_thread()
+    thread = await create_thread()
 
     # Создаем новый чат
     new_chat = await Chat.create(chat_id=str(thread.id), user=user)
-    user.chat = new_chat
-    await user.save()
+
     return {"message": "Chat cleared", "new_chat_id": new_chat.chat_id}

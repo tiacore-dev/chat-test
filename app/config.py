@@ -15,3 +15,5 @@ class Settings:
     ALGORITHM = "HS256"
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     ASSISTANT_ID = os.getenv('ASSISTANT_ID')
+    PORT = os.getenv('PORT')
+    WS_HOST = os.getenv('WS_HOST', 'localhost')
