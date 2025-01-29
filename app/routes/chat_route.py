@@ -49,26 +49,27 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
 
         while True:
             # Получаем сообщение от клиента
+
             user_input = await websocket.receive_text()
             logger.info(f"Received message from '{username}': {user_input}")
 
-            # Отправляем сообщение пользователя сразу в чат
-            await websocket.send_json({"role": "user", "content": user_input})
-
-            # Сохраняем сообщение пользователя
+            # Сохраняем сообщение пользователя в БД перед отправкой
             await Message.create(chat=chat, role="user", content=user_input)
             logger.info(f"User message saved to database: {user_input}")
+
+            # Отправляем сообщение клиенту (теперь оно не будет дублироваться)
+            await websocket.send_json({"role": "user", "content": user_input})
 
             # Генерация ответа ассистента
             response = await create_run(user_input, chat.chat_id, username)
             logger.info(f"Assistant response generated: {response}")
 
-            # Отправляем ответ ассистента сразу в чат
-            await websocket.send_json({"role": "assistant", "content": response})
-
             # Сохраняем ответ ассистента
             await Message.create(chat=chat, role="assistant", content=response)
             logger.info(f"Assistant message saved to database: {response}")
+
+            # Отправляем ответ ассистента сразу в чат
+            await websocket.send_json({"role": "assistant", "content": response})
 
     except WebSocketDisconnect:
         logger.warning(

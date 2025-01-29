@@ -34,25 +34,25 @@ ws.onopen = function () {
 
 ws.onmessage = function (event) {
     try {
-        const data = JSON.parse(event.data); // Парсим JSON
-
+        const data = JSON.parse(event.data);
         if (data.type === "history") {
             data.messages.forEach(msg => appendMessage(msg.role, msg.content));
         } else {
-            appendMessage(data.role, data.content);
+            appendMessage(data.role, data.content); // ✅ Теперь сообщения добавляются только при получении от сервера
         }
     } catch (e) {
         console.error("Ошибка парсинга WebSocket-сообщения:", e, event.data);
     }
 };
 
+
 function appendMessage(role, content) {
     const messageBox = document.getElementById("chat-box");
     const messageElement = document.createElement("div");
 
-    // Убираем лишние символы у ассистента
-    if (role === "assistant" && content.startsWith(":")) {
-        content = content.substring(1).trim();
+    // Очищаем контент ассистента от лишних символов
+    if (role === "assistant") {
+        content = content.replace(/^[:#]+/, "").trim(); // Убираем ":" и "###"
     }
 
     messageElement.innerHTML = `<strong>${role === "user" ? "Вы" : "Ассистент"}:</strong> ${content}`;
@@ -61,6 +61,7 @@ function appendMessage(role, content) {
     messageBox.appendChild(messageElement);
     messageBox.scrollTop = messageBox.scrollHeight; // Автоскролл вниз
 }
+
 
 
 
@@ -80,11 +81,11 @@ document.getElementById("message-form").addEventListener("submit", function (eve
     const message = messageInput.value.trim();
 
     if (message) {
-        appendMessage("user", message); // Добавляем в чат сразу
-        ws.send(message); // Отправка сообщения на сервер
+        ws.send(message); // ✅ Отправка на сервер
         messageInput.value = ""; // Очистка поля ввода
     }
 });
+
 
 
 // Очистка чата
