@@ -14,3 +14,4 @@ python-jose==3.3.0
 python-multipart==0.0.20
 openai==1.54.3
 aerich==0.2.4
+Werkzeug==3.1.3

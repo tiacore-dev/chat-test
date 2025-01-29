@@ -1,7 +1,7 @@
 services:
   aerich:
     build: .
-    command: aerich upgrade
+    command: ["/bin/sh", "-c", "aerich init -t app.database.config.TORTOISE_ORM && aerich upgrade"]
     volumes:
       - .:/app
     networks:

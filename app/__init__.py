@@ -20,7 +20,7 @@ def create_app() -> FastAPI:
         app,
         db_url=Settings.DATABASE_URL,
         modules={"models": ["app.database.models"]},
-        generate_schemas=True,
+        # generate_schemas=True,
         add_exception_handlers=True,
     )
 
