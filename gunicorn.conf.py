@@ -1,26 +1,24 @@
+import os
+from dotenv import load_dotenv
 from multiprocessing import cpu_count
 
-# Количество CPU
-cpu_cores = cpu_count()
+load_dotenv()
+# Получаем порт из переменной окружения или 5015
+PORT = os.getenv("PORT", "5020")
 
+bind = f"0.0.0.0:{PORT}"  # Указываем динамический порт
 worker_class = "uvicorn.workers.UvicornWorker"
+workers = max(2, min(4, cpu_count() // 2))
+threads = 4
 
-workers = max(2, min(4, cpu_cores // 2))  # Баланс между ядрами и воркерами
-threads = 4  # Увеличьте до 4 потоков на воркер
+timeout = 120
+keepalive = 5
 
-
-# Таймауты
-timeout = 120  # Увеличьте таймаут для обработки длительных операций
-keepalive = 5  # Увеличьте для соединений с повторным использованием
-
-
-# Логи
 loglevel = "info"
 accesslog = "-"
 errorlog = "-"
 
 preload_app = True
-
-worker_connections = 1000  # Максимум 1000 соединений для Gevent
+worker_connections = 1000
 max_requests = 500
 max_requests_jitter = 50

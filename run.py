@@ -5,7 +5,7 @@ from app import create_app
 load_dotenv()
 
 # Порт и биндинг
-port = os.getenv('PORT')
+PORT = os.getenv('PORT', "5020")
 
 
 async def create_admin_user():
@@ -26,4 +26,4 @@ async def startup_event():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=int(PORT), reload=True)
