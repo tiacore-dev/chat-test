@@ -1,1 +1,1 @@
-from .models import Message, User, Chat
+from .models import Message, User, Chat, create_user

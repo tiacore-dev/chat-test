@@ -4,6 +4,13 @@ from tortoise import fields
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+async def create_user(username: str, password: str):
+    # Хэшируем пароль
+    hashed_password = generate_password_hash(password)
+    user = await User.create(username=username, password_hash=hashed_password)
+    return user
+
+
 class User(Model):
     user_id = fields.UUIDField(
         pk=True, default=uuid.uuid4)  # UUID как Primary Key
@@ -14,15 +21,6 @@ class User(Model):
 
     class Meta:
         table = "users"
-
-    async def create_user(self, username: str, password: str):
-        # Хэшируем пароль
-        hashed_password = generate_password_hash(password)
-        user = await User.create(username=username, password_hash=hashed_password)
-        chat = await Chat.create(user_id=user.id)
-        user.chat_id = chat.id
-        await user.save()
-        return user
 
     def check_password(self, password):
         if self.password_hash:

@@ -23,10 +23,8 @@ fetch("/protected", {
     })
     .catch(error => {
         console.error("Token validation failed:", error);
-        window.location.href = "/";
+        window.location.href = "/login";
     });
-
-
 
 const ws = new WebSocket(`ws://localhost:5015/api/chat/ws?token=${token}`);
 
@@ -35,10 +33,36 @@ ws.onopen = function () {
 };
 
 ws.onmessage = function (event) {
-    const message = document.createElement("div");
-    message.textContent = event.data; // Сообщение от сервера
-    document.getElementById("chat-box").appendChild(message);
+    try {
+        const data = JSON.parse(event.data); // Парсим JSON
+
+        if (data.type === "history") {
+            data.messages.forEach(msg => appendMessage(msg.role, msg.content));
+        } else {
+            appendMessage(data.role, data.content);
+        }
+    } catch (e) {
+        console.error("Ошибка парсинга WebSocket-сообщения:", e, event.data);
+    }
 };
+
+function appendMessage(role, content) {
+    const messageBox = document.getElementById("chat-box");
+    const messageElement = document.createElement("div");
+
+    // Убираем лишние символы у ассистента
+    if (role === "assistant" && content.startsWith(":")) {
+        content = content.substring(1).trim();
+    }
+
+    messageElement.innerHTML = `<strong>${role === "user" ? "Вы" : "Ассистент"}:</strong> ${content}`;
+    messageElement.classList.add("message");
+    
+    messageBox.appendChild(messageElement);
+    messageBox.scrollTop = messageBox.scrollHeight; // Автоскролл вниз
+}
+
+
 
 ws.onerror = function (event) {
     console.error("WebSocket error:", event);
@@ -49,16 +73,21 @@ ws.onclose = function () {
     console.log("WebSocket connection closed");
 };
 
+// Отправка сообщений
 document.getElementById("message-form").addEventListener("submit", function (event) {
     event.preventDefault();
-    const message = document.getElementById("message-input").value;
+    const messageInput = document.getElementById("message-input");
+    const message = messageInput.value.trim();
 
     if (message) {
+        appendMessage("user", message); // Добавляем в чат сразу
         ws.send(message); // Отправка сообщения на сервер
-        document.getElementById("message-input").value = ""; // Очистка поля ввода
+        messageInput.value = ""; // Очистка поля ввода
     }
 });
 
+
+// Очистка чата
 document.getElementById("clear-chat").addEventListener("click", async function () {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -79,12 +108,20 @@ document.getElementById("clear-chat").addEventListener("click", async function (
             throw new Error("Failed to clear chat");
         }
 
-        const data = await response.json();
         alert("Chat cleared!");
-        // Перезагрузка страницы или логика для работы с новым чатом
-        window.location.reload();
+        document.getElementById("chat-box").innerHTML = ""; // Очистка чата на клиенте
     } catch (error) {
         console.error(error);
         alert("An error occurred");
     }
 });
+
+// Функция для отображения сообщений в чате
+function displayMessage(role, content) {
+    const chatBox = document.getElementById("chat-box");
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message", role);
+    messageElement.textContent = content;
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight; // Автопрокрутка вниз
+}

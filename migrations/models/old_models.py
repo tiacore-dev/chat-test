@@ -1,3 +1,4 @@
+from tortoise import Model, fields
 import uuid
 from tortoise.models import Model
 from tortoise import fields
@@ -14,15 +15,6 @@ class User(Model):
 
     class Meta:
         table = "users"
-
-    async def create_user(self, username: str, password: str):
-        # Хэшируем пароль
-        hashed_password = generate_password_hash(password)
-        user = await User.create(username=username, password_hash=hashed_password)
-        chat = await Chat.create(user_id=user.id)
-        user.chat_id = chat.id
-        await user.save()
-        return user
 
     def check_password(self, password):
         if self.password_hash:
@@ -55,7 +47,6 @@ class Message(Model):
     class Meta:
         table = "messages"
 
-from tortoise import Model, fields
 
 MAX_VERSION_LENGTH = 255
 
@@ -66,4 +57,3 @@ class Aerich(Model):
 
     class Meta:
         ordering = ["-id"]
-

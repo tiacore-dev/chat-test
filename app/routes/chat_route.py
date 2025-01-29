@@ -40,9 +40,11 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
     try:
         logger.info(f"Fetching chat for user '{username}'.")
 
-        chat = await get_chat(user, websocket)
+        chat, history = await get_chat(user)
 
         await manager.connect(websocket)
+        if history:
+            await websocket.send_json({"type": "history", "messages": history})
         logger.info(f"WebSocket connection established for user '{username}'.")
 
         while True:
@@ -50,21 +52,23 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
             user_input = await websocket.receive_text()
             logger.info(f"Received message from '{username}': {user_input}")
 
+            # Отправляем сообщение пользователя сразу в чат
+            await websocket.send_json({"role": "user", "content": user_input})
+
+            # Сохраняем сообщение пользователя
+            await Message.create(chat=chat, role="user", content=user_input)
+            logger.info(f"User message saved to database: {user_input}")
+
             # Генерация ответа ассистента
             response = await create_run(user_input, chat.chat_id, username)
             logger.info(f"Assistant response generated: {response}")
 
-            # Сохранение сообщений
-            await Message.create(chat=chat, role="user", content=user_input)
-            logger.info(f"User message saved to database: {user_input}")
+            # Отправляем ответ ассистента сразу в чат
+            await websocket.send_json({"role": "assistant", "content": response})
+
+            # Сохраняем ответ ассистента
             await Message.create(chat=chat, role="assistant", content=response)
             logger.info(f"Assistant message saved to database: {response}")
-
-            # Отправка сообщений клиенту
-            await websocket.send_json({"type": "message", "role": "user", "content": user_input})
-            await websocket.send_json({"type": "message", "role": "assistant", "content": response})
-            logger.info(
-                f"Messages sent to WebSocket client for user '{username}'.")
 
     except WebSocketDisconnect:
         logger.warning(

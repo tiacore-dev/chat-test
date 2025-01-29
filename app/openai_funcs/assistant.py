@@ -63,7 +63,7 @@ async def create_run(user_input, thread_id, user_id):
             elif run_status.status == "incomplete":
                 logger.info("Run is incomplete. Retrying...")
             else:
-                logger.error(f"Неизвестный статус рана: {run_status.status}")
+                logger.info(f"Неизвестный статус рана: {run_status.status}")
 
             time.sleep(1)  # Ожидание перед следующим запросом статуса
 
