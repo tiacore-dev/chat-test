@@ -11,7 +11,10 @@
 <body class="d-flex flex-column vh-100 bg-light">
 
     <div class="container mt-3">
-        <h2 class="text-center">Добро пожаловать в чат!</h2>
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="text-center flex-grow-1">Добро пожаловать в чат!</h2>
+            <button id="logout" class="btn btn-outline-danger">Выйти</button>
+        </div>
 
         <div id="chat-box" class="border rounded p-3 bg-white shadow-sm" style="height: 400px; overflow-y: auto;">
             <!-- Сообщения будут здесь -->
@@ -26,7 +29,7 @@
     <!-- Кнопка очистки чата (фиксируется справа внизу) -->
     <button id="clear-chat" class="btn btn-danger position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">
         Очистить чат
-    </button>
+    </button>    
 
     <script src="/static/chat.js" defer></script>
     <!-- Bootstrap JS -->

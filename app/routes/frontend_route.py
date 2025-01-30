@@ -41,3 +41,8 @@ async def render_chat(request: Request):
 @frontend_router.get("/", response_class=HTMLResponse)
 async def render_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
+
+@frontend_router.get("/register", response_class=HTMLResponse)
+async def get_register_page(request: Request):  # Добавили аннотацию Request
+    return templates.TemplateResponse("register.html", {"request": request})

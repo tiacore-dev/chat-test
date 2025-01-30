@@ -131,3 +131,9 @@ function displayMessage(role, content) {
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight; // Автопрокрутка вниз
 }
+
+
+document.getElementById("logout").addEventListener("click", function () {
+    localStorage.removeItem("access_token");
+    window.location.href = "/";
+});
