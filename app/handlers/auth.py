@@ -46,15 +46,28 @@ def verify_token(token: str = Depends(oauth2_scheme)):
         ) from exc
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+    """ Декодирует токен и получает объект пользователя """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-        return username
-    except JWTError as exc:
-        raise HTTPException(status_code=401, detail="Invalid token") from exc
+
+        user = await User.get_or_none(username=username)
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+
+        return user
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def get_current_admin(user: User = Depends(get_current_user)) -> User:
+    """ Проверяет, является ли пользователь админом """
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+    return user
 
 
 async def login_handler(username: str, password: str):
@@ -62,3 +75,15 @@ async def login_handler(username: str, password: str):
     if user and user.check_password(password):
         return {"access_token": create_access_token({"sub": username})}
     raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+async def require_admin(user: User = Depends(get_current_user)):
+    """
+    Проверяет, является ли пользователь администратором.ij,
+    """
+    if user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Недостаточно прав для доступа"
+        )
+    return user

@@ -4,10 +4,10 @@ from tortoise import fields
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-async def create_user(username: str, password: str):
+async def create_user(username: str, password: str, role: str):
     # Хэшируем пароль
     hashed_password = generate_password_hash(password)
-    user = await User.create(username=username, password_hash=hashed_password)
+    user = await User.create(username=username, password_hash=hashed_password, role=role)
     return user
 
 
@@ -16,6 +16,8 @@ class User(Model):
         pk=True, default=uuid.uuid4)  # UUID как Primary Key
     username = fields.CharField(max_length=50, unique=True)
     password_hash = fields.CharField(max_length=255)
+    role = fields.CharField(max_length=50)
+    is_blocked = fields.BooleanField(default=False)
 
     class Meta:
         table = "users"

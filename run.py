@@ -13,7 +13,7 @@ async def create_admin_user():
     # Проверяем, существует ли пользователь "admin"
     admin = await User.filter(username="admin").first()
     if not admin:
-        await create_user(username="admin", password="qweasdzxc")
+        await create_user(username="admin", password="qweasdzxc", role='admin')
 
 
 app = create_app()

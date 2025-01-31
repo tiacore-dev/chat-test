@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from jose import JWTError, jwt
 from loguru import logger
-from app.handlers.auth import oauth2_scheme, SECRET_KEY, ALGORITHM
+from app.handlers.auth import oauth2_scheme, SECRET_KEY, ALGORITHM, require_admin
 
 templates = Jinja2Templates(directory="app/templates")
 frontend_router = APIRouter()
@@ -46,3 +46,9 @@ async def render_login(request: Request):
 @frontend_router.get("/register", response_class=HTMLResponse)
 async def get_register_page(request: Request):  # Добавили аннотацию Request
     return templates.TemplateResponse("register.html", {"request": request})
+
+
+# @frontend_router.get("/admin", response_class=HTMLResponse)
+@frontend_router.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})

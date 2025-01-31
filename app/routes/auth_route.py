@@ -21,7 +21,7 @@ async def register(user_data: RegisterUser):
                        user_data.username}""")
         raise HTTPException(status_code=400, detail="User already exists")
 
-    new_user = await create_user(user_data.username, user_data.password)
+    new_user = await create_user(user_data.username, user_data.password, role='user')
 
     logger.info(f"New user registered: {new_user.username}")
 

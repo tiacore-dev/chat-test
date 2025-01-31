@@ -8,13 +8,37 @@ if (!token) {
 // Глобальная переменная для WebSocket
 let ws;
 
-// Проверка токена
-fetch("/protected", {
-    method: "GET",
-    headers: {
-        Authorization: `Bearer ${token}`
-    }
-})
+// Функция для проверки роли пользователя
+function checkUserRole() {
+    return fetch("/api/user/me", {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Failed to fetch user data");
+        }
+        return response.json();
+    })
+    .then(user => {
+        console.log("User data:", user); // Логируем ответ API
+        if (user.role === "admin") {
+            console.log("User is admin, showing admin panel button.");
+            document.getElementById("admin-panel").style.display = "inline-block";
+        }
+    })
+    .catch(error => {
+        console.error("Error fetching user data:", error);
+        window.location.href = "/";
+    });
+}
+
+// Функция для проверки токена и установки WebSocket
+function initializeWebSocket() {
+    return fetch("/protected", {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` }
+    })
     .then(response => {
         if (!response.ok) {
             throw new Error("Invalid or expired token");
@@ -23,7 +47,7 @@ fetch("/protected", {
     })
     .then(data => {
         console.log("Token is valid:", data);
-        return fetch("/config");  // Запрос на получение WebSocket URL
+        return fetch("/config"); // Запрос на получение WebSocket URL
     })
     .then(response => response.json())
     .then(config => {
@@ -58,10 +82,11 @@ fetch("/protected", {
     })
     .catch(error => {
         console.error("Failed to fetch WebSocket config:", error);
-        window.location.href = "/login";
+        window.location.href = "/";
     });
+}
 
-
+// Функция для отображения сообщений в чате
 function appendMessage(role, content) {
     const messageBox = document.getElementById("chat-box");
     const messageElement = document.createElement("div");
@@ -73,11 +98,15 @@ function appendMessage(role, content) {
 
     messageElement.innerHTML = `<strong>${role === "user" ? "Вы" : "Ассистент"}:</strong> ${content}`;
     messageElement.classList.add("message");
-    
+
     messageBox.appendChild(messageElement);
     messageBox.scrollTop = messageBox.scrollHeight; // Автоскролл вниз
 }
 
+// Инициализация WebSocket и проверка роли пользователя
+Promise.all([checkUserRole(), initializeWebSocket()])
+    .then(() => console.log("Initialization complete"))
+    .catch(error => console.error("Initialization failed:", error));
 
 // Отправка сообщений
 document.getElementById("message-form").addEventListener("submit", function (event) {
@@ -91,11 +120,8 @@ document.getElementById("message-form").addEventListener("submit", function (eve
     }
 });
 
-
-
 // Очистка чата
 document.getElementById("clear-chat").addEventListener("click", async function () {
-    const token = localStorage.getItem("access_token");
     if (!token) {
         alert("You are not authenticated!");
         return;
@@ -122,18 +148,13 @@ document.getElementById("clear-chat").addEventListener("click", async function (
     }
 });
 
-// Функция для отображения сообщений в чате
-function displayMessage(role, content) {
-    const chatBox = document.getElementById("chat-box");
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message", role);
-    messageElement.textContent = content;
-    chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight; // Автопрокрутка вниз
-}
-
-
+// Кнопка "Выйти"
 document.getElementById("logout").addEventListener("click", function () {
     localStorage.removeItem("access_token");
     window.location.href = "/";
+});
+
+// Переход в админку
+document.getElementById("admin-panel").addEventListener("click", () => {
+    window.location.href = "/admin";
 });

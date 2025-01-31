@@ -1,0 +1,9 @@
+body {
+    font-family: Arial, sans-serif;
+}
+#logs-container {
+    white-space: pre-wrap;
+    font-size: 14px;
+    max-height: 300px;
+    overflow-y: auto;
+}
