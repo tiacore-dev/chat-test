@@ -7,6 +7,7 @@ from app.handlers.auth import SECRET_KEY, ALGORITHM, oauth2_scheme
 from app.database.models import User, Message, Chat
 from app.pydantic_models.message_model import MessageRequest
 from app.openai_funcs.assistant import create_run, create_thread
+from app.active_connections import active_connections
 
 # Создаем роутеры
 chat_router = APIRouter()
@@ -24,14 +25,21 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
             logger.warning("Token is invalid: no username found.")
             await websocket.close(code=1008)
             return
-        logger.info(f"Token is valid for user: {username}")
-
+        ip = websocket.client.host  # Получаем IP-адрес
         user = await User.get(username=username)
         logger.info(f"User '{username}' fetched from database.")
-    except JWTError as e:
-        logger.error(f"JWT decoding failed: {e}")
+        active_connections[user.username] = ip  # Регистрируем соединение
+        logger.info(f"Token is valid for user: {username}")
+        if user.is_blocked:
+            logger.warning(f"Blocked user '{username}' attempted to connect!")
+            await websocket.send_json({"error": "Вы заблокированы администратором."})
+            await websocket.close(code=1008)
+            return
+
+    except JWTError:
+        logger.error("Invalid token format.")
+        await websocket.send_json({"error": "Invalid token."})
         await websocket.close(code=1008)
-        return
     except Exception as e:
         logger.error(f"Unexpected error fetching user: {e}")
         await websocket.close(code=1008)
@@ -75,10 +83,14 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
         logger.warning(
             f"WebSocket connection disconnected for user '{username}'.")
         manager.disconnect(websocket)
+        # Удаляем из списка активных
+        active_connections.pop(user.username, None)
     except Exception as e:
         logger.error(f"""Unexpected error in WebSocket connection for user '{
                      username}': {e}""")
         await websocket.close(code=1011)
+        # Удаляем из списка активных
+        active_connections.pop(user.username, None)
 
 
 @chat_router.post("/server-message")

@@ -60,18 +60,61 @@ async function deleteUser(userId) {
     }
 }
 
-// Загружаем логи
+// Загружаем и фильтруем логи
 async function loadLogs() {
+    const levelFilter = document.getElementById("log-level").value; // Получаем уровень логов
+    const dateFilter = document.getElementById("log-date").value; // Получаем дату
+
     try {
         const response = await fetch("/admin/logs", {
             headers: { "Authorization": `Bearer ${token}` }
         });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch logs");
+        }
+
         const logs = await response.text();
-        document.getElementById("logs-container").textContent = logs;
+        const logsContainer = document.getElementById("logs-container");
+        logsContainer.innerHTML = ""; // Очистка перед загрузкой новых данных
+
+        const lines = logs.split("\n"); // Разделяем логи по строкам
+        let filteredLogs = lines.filter(line => {
+            if (!line.trim()) return false; // Пропускаем пустые строки
+
+            // Фильтр по дате (если выбран)
+            if (dateFilter) {
+                const logDate = line.substring(0, 10); // Берём дату из лога (YYYY-MM-DD)
+                if (!logDate.startsWith(dateFilter)) return false;
+            }
+
+            // Фильтр по уровню логирования
+            if (levelFilter !== "ALL" && !line.includes(levelFilter)) return false;
+
+            return true;
+        });
+
+        // Выводим отфильтрованные логи
+        filteredLogs.forEach(line => {
+            const logLine = document.createElement("div");
+            logLine.textContent = line;
+            logLine.classList.add("log-line");
+            logsContainer.appendChild(logLine);
+        });
+
+        logsContainer.scrollTop = logsContainer.scrollHeight; // Прокрутка вниз
     } catch (error) {
-        console.error("Error loading logs:", error);
+        console.error("Ошибка загрузки логов:", error);
     }
 }
+
+// Обновляем логи при изменении фильтра
+document.getElementById("log-level").addEventListener("change", loadLogs);
+document.getElementById("log-date").addEventListener("change", loadLogs);
+
+// Загружаем логи при загрузке страницы
+window.addEventListener("load", loadLogs);
+
 
 // Загружаем активные WebSocket-подключения
 async function loadConnections() {
@@ -116,4 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadUsers();
     loadLogs();
     loadConnections();
+});
+
+document.getElementById("back-to-chat").addEventListener("click", () => {
+    window.location.href = "/chat";
 });

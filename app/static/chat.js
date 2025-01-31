@@ -2,7 +2,7 @@ const token = localStorage.getItem("access_token");
 
 if (!token) {
     console.error("Token not found in localStorage");
-    window.location.href = "/login";
+    window.location.href = "/";
 }
 
 // Глобальная переменная для WebSocket
@@ -61,6 +61,13 @@ function initializeWebSocket() {
         ws.onmessage = function (event) {
             try {
                 const data = JSON.parse(event.data);
+
+                if (data.error) {
+                    alert(data.error); // Выводим ошибку на экран
+                    ws.close(); // Закрываем соединение
+                    return;
+                }
+
                 if (data.type === "history") {
                     data.messages.forEach(msg => appendMessage(msg.role, msg.content));
                 } else {
@@ -70,6 +77,7 @@ function initializeWebSocket() {
                 console.error("Ошибка парсинга WebSocket-сообщения:", e, event.data);
             }
         };
+
 
         ws.onerror = function (event) {
             console.error("WebSocket error:", event);

@@ -1,11 +1,12 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import JSONResponse
 from app.database.models import User
 from app.handlers.auth import require_admin  # Декоратор проверки роли
+from app.active_connections import active_connections
 
 
-admin_router = APIRouter(prefix="/admin", tags=["Admin"])
+admin_router = APIRouter()
 
 # Логгер для записи логов
 logger = logging.getLogger("uvicorn")
@@ -47,15 +48,12 @@ async def delete_user(user_id: str, admin: User = Depends(require_admin)):
 @admin_router.get("/logs")
 async def get_logs(admin: User = Depends(require_admin)):
     try:
-        with open("logs/app.log", "r") as log_file:
+        with open("logs/app.log", "r", encoding="utf-8") as log_file:
             logs = log_file.read()
-        return JSONResponse(content=logs)
+        # Отдаём логи как текст
+        return Response(content=logs, media_type="text/plain")
     except FileNotFoundError:
-        return JSONResponse(content="No logs found", status_code=404)
-
-
-# 📌 Получение списка WebSocket-подключений
-active_connections = {}  # {user_id: ip_address}
+        return Response(content="No logs found", status_code=404, media_type="text/plain")
 
 
 @admin_router.get("/connections")

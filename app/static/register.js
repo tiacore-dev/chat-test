@@ -22,7 +22,7 @@ document.getElementById("register-form").addEventListener("submit", async functi
             throw new Error(data.detail || "Ошибка регистрации");
         }
 
-        alert("Регистрация успешна! Теперь войдите в аккаунт.");
+        alert("Регистрация успешна!");
         localStorage.setItem("access_token", data.access_token);
         window.location.href = "/chat";
     } catch (error) {
